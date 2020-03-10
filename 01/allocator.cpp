@@ -23,8 +23,8 @@ void Allocator::makeAllocator(size_t maxSize){
 }
 char* Allocator::alloc(size_t size){
     if (size <= (totalsize - cur_allocated)){
-        cur_allocated += size;
         char* ptr = (memory + cur_allocated);
+        cur_allocated += size;
         return ptr;
     } else {
         return nullptr;
