@@ -3,8 +3,8 @@
 class Allocator{
     char* memory;
     char* memory_start;
-    unsigned long long totalsize;
-    bool is_available;
+    size_t totalsize;
+    size_t cur_allocated;
 public:
     Allocator();
     ~Allocator();

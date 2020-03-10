@@ -3,7 +3,7 @@ Allocator::Allocator(){
     memory = nullptr;
     memory_start = nullptr;
     totalsize = 0;
-    is_available = false;
+    cur_allocated = 0;
 }
 Allocator::~Allocator(){
     if (memory != nullptr){
@@ -15,20 +15,16 @@ void Allocator::makeAllocator(size_t maxSize){
         return;
     }
     memory = (char*)malloc(maxSize);
-    if (memory != NULL){
+    if (memory != nullptr){
         memory_start = memory;
         totalsize = maxSize;
-        is_available = true;
     }
     return;
 }
 char* Allocator::alloc(size_t size){
-    if ((size <= 0) || (is_available == false)){
-        return nullptr;
-    }
-    if (size <= totalsize){
-        char* ptr = memory;
-        is_available = false;
+    if (size <= (totalsize - cur_allocated)){
+        cur_allocated += size;
+        char* ptr = (memory + cur_allocated);
         return ptr;
     } else {
         return nullptr;
@@ -36,8 +32,6 @@ char* Allocator::alloc(size_t size){
 }
 void Allocator::reset(){
     memory = memory_start;
-    if (memory != nullptr){
-        is_available = true;
-    }
+    cur_allocated = 0;
     return;
 }
