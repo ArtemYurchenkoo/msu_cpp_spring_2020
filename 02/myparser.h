@@ -7,6 +7,10 @@ class MyParser{
     OnString on_str_callback;
     StartEnd parse_end;
     StartEnd parse_start;
+    void static on_number_callback_default(const int number);
+    void static on_str_callback_default(const char* str);
+    void static start_callback_default();
+    void static end_callback_default();
 public:
     MyParser();
     void parse(const char* text);

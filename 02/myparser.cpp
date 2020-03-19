@@ -18,18 +18,27 @@ void MyParser::register_on_end_callback(StartEnd callback){
     parse_end = callback;
 }
 
+void MyParser::on_number_callback_default(const int number){
+
+}
+
+void MyParser::on_str_callback_default(const char* str){
+
+}
+void MyParser::start_callback_default(){
+
+}
+void MyParser::end_callback_default(){
+
+}
+
 MyParser::MyParser(){
-    parse_start = nullptr;
-    parse_end = nullptr;
-    on_number_callback = nullptr;
-    on_str_callback = nullptr;
+    parse_start = &start_callback_default;
+    parse_end = &end_callback_default;
+    on_number_callback = &on_number_callback_default;
+    on_str_callback = &on_str_callback_default;
 }
 void MyParser::parse(const char* text){
-    if ((parse_end == nullptr) || (parse_start == nullptr) || 
-        (on_str_callback == nullptr) || (on_number_callback == nullptr)){
-            std::cerr << "Uninitialized callback";
-            return;
-        }
     parse_start();
     while ((*text) != '\0'){
         std::string buf;

@@ -24,5 +24,7 @@ int main(){
     x.register_on_end_callback(end);
     x.register_on_start_callback(start);
     x.parse("123 abc 4567");
+    MyParser y;
+    y.parse("123 abc 4567");
     return 0;
 }
