@@ -31,5 +31,8 @@ int main(){
     catch(std::out_of_range){
         std::cout << "Range control works fine\n";
     }
+    const Matrix matr(2, 1);
+    mmm[1][2] = matr[2][1];
+    assert(mmm[1][2] == 0);
     return 0;
 }

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cassert>
 #include <exception>
+#include <new>
 #include "matrix.h"
 
 Matrix::Row::Row(size_t m){
@@ -16,9 +17,6 @@ Matrix::Row::Row(){
 }
 
 Matrix::Row::~Row(){
-    if(row != nullptr){
-        delete [] row;
-    }
 }
 
 bool Matrix::Row::operator==(const Row & other) const{
@@ -44,6 +42,13 @@ int & Matrix::Row::operator[](size_t c){
     return row[c -1];
 }
 
+const int & Matrix::Row::operator[](size_t c) const{
+    if (c - 1 > cols){
+        throw std::out_of_range("");
+    }
+    return row[c -1];
+}
+
 Matrix::Row & Matrix::Row::operator*=(const int value){
     for (size_t i = 0; i < cols; ++i){
         row[i] *= value;
@@ -63,13 +68,17 @@ void Matrix::Row::operator=(const Row & r){
 Matrix::Matrix(size_t n, size_t m){
     items = new Row[n];
     for (size_t i = 0; i < n; ++i){
-        items[i] = Row(m);
+        Row* ptr = new (items + i) Row(m);
     }
     n_cols = m;
     n_rows = n;
 }
 
 Matrix::~Matrix(){
+    for(size_t i = 0; i < n_rows; ++i){
+        delete [] items[i].row;
+        items[i].~Row();
+    }
     delete [] items;
 }
 
@@ -82,6 +91,10 @@ size_t Matrix::getCols() const{
 }
 
 Matrix::Row & Matrix::operator[](size_t r){
+    return items[r - 1];
+}
+
+const Matrix::Row & Matrix::operator[](size_t r) const{
     return items[r - 1];
 }
 
