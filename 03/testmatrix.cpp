@@ -34,6 +34,5 @@ int main(){
     const Matrix matr(2, 1);
     mmm[1][2] = matr[1][0];
     assert(mmm[1][2] == 0); 
-    try {} catch(...){}
     return 0;
 }
