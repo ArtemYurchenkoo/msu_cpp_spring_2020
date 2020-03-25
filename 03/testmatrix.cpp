@@ -32,7 +32,7 @@ int main(){
         std::cout << "Range control works fine\n";
     }
     const Matrix matr(2, 1);
-    mmm[1][2] = matr[2][1];
+    mmm[1][2] = matr[1][0];
     assert(mmm[1][2] == 0);
     return 0;
 }

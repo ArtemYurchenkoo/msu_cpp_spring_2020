@@ -36,17 +36,17 @@ bool Matrix::Row::operator!=(const Row & other) const{
 }
 
 int & Matrix::Row::operator[](size_t c){
-    if (c - 1 > cols){
+    if (c > cols){
         throw std::out_of_range("");
     }
-    return row[c -1];
+    return row[c];
 }
 
 const int & Matrix::Row::operator[](size_t c) const{
-    if (c - 1 > cols){
+    if (c > cols){
         throw std::out_of_range("");
     }
-    return row[c -1];
+    return row[c];
 }
 
 Matrix::Row & Matrix::Row::operator*=(const int value){
@@ -66,10 +66,11 @@ void Matrix::Row::operator=(const Row & r){
 }
 
 Matrix::Matrix(size_t n, size_t m){
-    items = new Row[n];
-    for (size_t i = 0; i < n; ++i){
-        Row* ptr = new (items + i) Row(m);
+    void* p = ::operator new(sizeof(Row)*n);
+    for(size_t i = 0; i < n; ++i){
+        new (p+i*sizeof(Row)) Row(m);
     }
+    items = static_cast<Row*>(p);
     n_cols = m;
     n_rows = n;
 }
@@ -79,7 +80,7 @@ Matrix::~Matrix(){
         delete [] items[i].row;
         items[i].~Row();
     }
-    delete [] items;
+    delete items;
 }
 
 size_t Matrix::getRows() const{
@@ -91,11 +92,19 @@ size_t Matrix::getCols() const{
 }
 
 Matrix::Row & Matrix::operator[](size_t r){
-    return items[r - 1];
+    if(r > n_rows){
+        throw std::out_of_range("");
+    }
+    throw;
+    return items[r];
 }
 
 const Matrix::Row & Matrix::operator[](size_t r) const{
-    return items[r - 1];
+    if(r > n_rows){
+        throw std::out_of_range("");
+    }
+    throw;
+    return items[r];
 }
 
 bool Matrix::operator==(const Matrix & other) const{
