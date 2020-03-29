@@ -17,6 +17,10 @@ Matrix::Row::Row(){
 }
 
 Matrix::Row::~Row(){
+    if (row){
+        delete [] row;
+        row = nullptr;
+    }
 }
 
 bool Matrix::Row::operator==(const Row & other) const{
@@ -36,25 +40,15 @@ bool Matrix::Row::operator!=(const Row & other) const{
 }
 
 int & Matrix::Row::operator[](size_t c){
-    try{
-        if (c >= cols){
-            throw std::out_of_range("");
-        }
-    }
-    catch(std::out_of_range e){
-        throw e;
+    if (c >= cols || c < 0){
+        throw std::out_of_range("");
     }
     return row[c];
 }
 
 const int & Matrix::Row::operator[](size_t c) const{
-    try{
-        if (c >= cols){
-            throw std::out_of_range("");
-        }
-    }
-    catch(std::out_of_range e){
-        throw e;
+    if (c >= cols || c < 0){
+        throw std::out_of_range("");
     }
     return row[c];
 }
@@ -76,18 +70,16 @@ void Matrix::Row::operator=(const Row & r){
 }
 
 Matrix::Matrix(size_t n, size_t m){
-    void* p = ::operator new(sizeof(Row)*n);
+    items = static_cast<Row*>(::operator new(sizeof(Row)*n));
     for(size_t i = 0; i < n; ++i){
-        new (p+i*sizeof(Row)) Row(m);
+        new (items + i) Row(m);
     }
-    items = static_cast<Row*>(p);
     n_cols = m;
     n_rows = n;
 }
 
 Matrix::~Matrix(){
     for(size_t i = 0; i < n_rows; ++i){
-        delete [] items[i].row;
         items[i].~Row();
     }
     delete items;
@@ -102,25 +94,15 @@ size_t Matrix::getCols() const{
 }
 
 Matrix::Row & Matrix::operator[](size_t r){
-    try{
-        if(r >= n_rows){
-            throw std::out_of_range("");
-        }
-    }
-    catch(std::out_of_range e){
-        throw e;
+    if(r >= n_rows || r < 0){
+        throw std::out_of_range("");
     }
     return items[r];
 }
 
 const Matrix::Row & Matrix::operator[](size_t r) const{
-    try{
-        if(r >= n_rows){
-            throw std::out_of_range("");
-        }
-    }
-    catch(std::out_of_range e){
-        throw e;
+    if(r >= n_rows || r < 0){
+        throw std::out_of_range("");
     }
     return items[r];
 }
