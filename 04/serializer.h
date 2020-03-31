@@ -23,8 +23,7 @@ public:
     }
 
     template <class... ArgsT>
-    Error operator()(ArgsT... args)
-    {
+    Error operator()(ArgsT&... args){
         return process(args...);
     }
 
@@ -73,45 +72,48 @@ public:
     }
 
     template <class... ArgsT>
-    Error operator()(ArgsT&&... args)
-    {
-        return process(std::forward<ArgsT>(args)...);
+    Error operator()(ArgsT&... args){
+        return process(args...);
     }
 
 private:
 
     template<class T>
-    Error read(T&& val){
-        constexpr bool type_uint64_t = std::is_same<T, uint64_t(&)>::value;
-        constexpr bool type_bool = std::is_same<T, bool(&)>::value;
-        std::string s;
-        in >> s;
-        if (type_uint64_t && s[0] >= '0' && s[0] <= '9'){
-            val = atoi(s.data());
-            return Error::NoError;
-        }
-        if (type_bool){
-            if (s == "true"){
-                val = true;
-                return Error::NoError;
-            } else if (s == "false"){
-                val = false;
-                return Error::NoError;
-            }
-        }
+    Error process(T& val){
         return Error::CorruptedArchive;
-    }
-
-    template<class T>
-    Error process(T&& val){
-        return read(std::forward<T>(val));
     }
     
     template <class T, class... Args>
     Error process(T&& val, Args&&... args){
-        if (read(std::forward<T>(val)) != Error::NoError){
+        if (process(val) != Error::NoError){
             return Error::CorruptedArchive;
         }
         return process(std::forward<Args>(args)...);
     }
-}; 
+};
+
+template<>
+Error Deserializer::process<bool>(bool& val){
+    std::string s;
+    in >> s;
+    if (s == "true"){
+        val = true;
+        return Error::NoError;
+    } else if (s == "false"){
+        val = false;
+        return Error::NoError;
+    }
+   return Error::CorruptedArchive;
+}
+
+template<>
+Error Deserializer::process<uint64_t>(uint64_t& val){
+    std::string s;
+    in >> s;
+    if (s[0] >= '0' && s[0] <= '9'){
+        val = atoi(s.data());
+        return Error::NoError;
+    }
+    return Error::CorruptedArchive;
+}
+
