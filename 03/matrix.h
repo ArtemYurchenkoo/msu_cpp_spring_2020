@@ -6,7 +6,6 @@ class Matrix{
     class Row{
         int* row;
         size_t cols;
-        friend class Matrix;
     public:
         Row(size_t m);
         Row();
@@ -21,7 +20,6 @@ class Matrix{
     Row* items;
     size_t n_rows;
     size_t n_cols;
-    friend class Row;
 public:
     Matrix(size_t n, size_t m);
     ~Matrix();

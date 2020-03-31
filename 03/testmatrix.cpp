@@ -28,8 +28,9 @@ int main(){
     try{
         mmm[10][10] = 50;
     }
-    catch(std::out_of_range){
+    catch(const std::out_of_range& e){
         std::cout << "Range control works fine\n";
+        std::cout << e.what() << '\n';
     }
     const Matrix matr(2, 1);
     mmm[1][2] = matr[1][0];
