@@ -70,7 +70,7 @@ void Matrix::Row::operator=(const Row & r){
 }
 
 Matrix::Matrix(size_t n, size_t m){
-    items = static_cast<Row*>(::operator new(sizeof(Row)*n));
+    items = static_cast<Row*>(operator new [](sizeof(Row)*n));
     for(size_t i = 0; i < n; ++i){
         new (items + i) Row(m);
     }
@@ -82,7 +82,7 @@ Matrix::~Matrix(){
     for(size_t i = 0; i < n_rows; ++i){
         items[i].~Row();
     }
-    delete items;
+    operator delete [](items);
 }
 
 size_t Matrix::getRows() const{
