@@ -3,8 +3,7 @@
 #include <string>
 
 
-enum class Error
-{
+enum class Error{
     NoError,
     CorruptedArchive
 };
@@ -23,40 +22,37 @@ public:
     }
 
     template <class... ArgsT>
-    Error operator()(ArgsT&... args){
+    Error operator()(ArgsT&... args) const{
         return process(args...);
     }
 
 private:
 
     template<class T>
-    Error process(T& val){
+    Error process(T& val) const{
         return Error::NoError;
     }
     
     template <class T, class... Args>
-    Error process(T&& val, Args&&... args){
+    Error process(T&& val, Args&&... args) const{
         process(val);
-        return process(std::forward<Args>(args)...);
+        return process(args...);
+    }
+
+    Error process(uint64_t& val) const{
+        o << val << Separator;
+        return Error::NoError;
+    }
+
+    Error process(bool& val) const{
+        if (val){
+            o << "true" << Separator;
+        } else {
+            o << "false" << Separator;
+        }
+        return Error::NoError;
     }
 };
-
-template <>
-Error Serializer::process<bool>(bool& val){
-    if (val){
-        o << "true" << Separator;
-    } else {
-        o << "false" << Separator;
-    }
-    return Error::NoError;
-}
-
-template <>
-Error Serializer::process<uint64_t>(uint64_t& val){
-    o << val << Separator;
-    return Error::NoError;
-}
-
 
 class Deserializer{
     std::istream& in;
@@ -88,32 +84,39 @@ private:
         if (process(val) != Error::NoError){
             return Error::CorruptedArchive;
         }
-        return process(std::forward<Args>(args)...);
+        return process(args...);
+    }
+
+    Error process(bool& val){
+        std::string s;
+        in >> s;
+        if (s == "true"){
+            val = true;
+            return Error::NoError;
+        } else if (s == "false"){
+            val = false;
+            return Error::NoError;
+        }
+        return Error::CorruptedArchive;
+    }
+
+    Error process(uint64_t& val){
+        std::string s;
+        in >> s;
+        if (checkInt(s)){
+            val = atoi(s.data());
+            return Error::NoError;
+        }
+        return Error::CorruptedArchive;
+    }
+
+    bool checkInt(const std::string& s) const{
+        std::string::const_iterator i = s.begin();
+        while (i != s.end()){
+            if (!(isdigit(*i++))){
+                return false;
+            }
+        }
+        return true;
     }
 };
-
-template<>
-Error Deserializer::process<bool>(bool& val){
-    std::string s;
-    in >> s;
-    if (s == "true"){
-        val = true;
-        return Error::NoError;
-    } else if (s == "false"){
-        val = false;
-        return Error::NoError;
-    }
-   return Error::CorruptedArchive;
-}
-
-template<>
-Error Deserializer::process<uint64_t>(uint64_t& val){
-    std::string s;
-    in >> s;
-    if (s[0] >= '0' && s[0] <= '9'){
-        val = atoi(s.data());
-        return Error::NoError;
-    }
-    return Error::CorruptedArchive;
-}
-
