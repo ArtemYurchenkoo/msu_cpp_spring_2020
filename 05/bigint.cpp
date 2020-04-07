@@ -200,11 +200,6 @@ BigInt& BigInt::operator-=(const BigInt& other){
     return *this;
 }
 
-BigInt& BigInt::operator-(){
-    this->sign = !this->sign;
-    return *this;
-}
-
 BigInt BigInt::operator-() const{
     BigInt temp(*this);
     temp.sign  = !temp.sign;

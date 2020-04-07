@@ -16,7 +16,6 @@ public:
     ~BigInt();
     BigInt& operator=(const BigInt&);
     bool getSign() const;
-    BigInt& operator-();
     BigInt operator-() const;
     BigInt operator+(const BigInt&) const;
     BigInt operator-(const BigInt&) const;
