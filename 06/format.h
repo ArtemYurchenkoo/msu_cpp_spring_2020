@@ -5,17 +5,7 @@
 #include <sstream>
 #include <stdexcept>
 
-std::string to_string(int x) { return std::to_string(x); }
-std::string to_string(unsigned int x) { return std::to_string(x); }
-std::string to_string(long x) { return std::to_string(x); }
-std::string to_string(unsigned long x) { return std::to_string(x); }
-std::string to_string(long long x) { return std::to_string(x); }
-std::string to_string(unsigned long long x) { return std::to_string(x); }
-std::string to_string(float x) { return std::to_string(x); }
-std::string to_string(double x) { return std::to_string(x); }
-std::string to_string(long double x) { return std::to_string(x); }
-std::string to_string(const char *x) { return std::string(x); }
-std::string to_string(const std::string &x) { return x; }
+using std::to_string;
 
 template<class T> std::string to_string(const T &t){
     std::stringstream ss;
@@ -23,8 +13,7 @@ template<class T> std::string to_string(const T &t){
     return ss.str();
 }
 
-std::string format_impl(const std::string &fmt, const std::vector<std::string> &strs)
-{
+std::string format_impl(const std::string &fmt, const std::vector<std::string> &strs){
     std::string res;
     std::string buf;
     bool start_format = false;
@@ -67,19 +56,11 @@ std::string format_impl(const std::string &fmt, const std::vector<std::string> &
     return res;
 }
 
-template<class Arg, class ... Args> std::string format_impl(const std::string& fmt, std::vector<std::string>& strs, Arg&& arg, Args&& ... args)
-{
-    strs.push_back(to_string(arg));
-    return format_impl(fmt, strs, args...);
-}
-
-std::string format(const std::string& fmt)
-{
+std::string format(const std::string& fmt){
     return fmt;
 }
 
-template<class Arg, class ... Args> std::string format(const std::string& fmt, Arg&& arg, Args&& ... args)
-{
-    std::vector<std::string> strs;
-    return format_impl(fmt, strs, arg, args...);
+template<class ... Args> std::string format(const std::string& fmt, Args&& ... args){
+    std::vector<std::string> strs{to_string(std::forward<Args>(args))...};
+    return format_impl(fmt, strs);
 }
