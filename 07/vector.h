@@ -19,16 +19,25 @@ public:
         return ptr;
     }
 
+    void construct(pointer p, const_reference val){
+        new (p) value_type(val);
+    }
+
+    void destroy(pointer p){
+        p->~value_type();
+    }
+
     void deallocate(pointer ptr, size_t count){
         if (ptr == nullptr){
             return;
         }
         for(size_t i = 0; i < count; ++i){
-            ptr[i].~value_type();
+            destroy(ptr + i);
         }
         ::operator delete[](ptr);
     }
 };
+
 
 template <class T>
 class Iterator{
@@ -114,9 +123,6 @@ public:
         allocator = Alloc();
         capacity_ = 4;
         ptr = allocator.allocate(capacity_);
-        // for (size_t i = 0; i < capacity_; ++i){
-            // ptr[i] = value_type();
-        // }
         size_ = 0;
     }
 
@@ -126,7 +132,7 @@ public:
         ptr = allocator.allocate(capacity_);
         size_ = count;
         for (size_t i = 0; i < count; ++i){
-            ptr[i] = value_type();
+            allocator.construct(ptr + i, value_type());
         }
     }
 
@@ -135,7 +141,7 @@ public:
         capacity_ = 2 * count;
         ptr = allocator.allocate(capacity_);
         for (size_t i = 0; i < count; ++i){
-            ptr[i] = defaultValue;
+            allocator.construct(ptr + i, defaultValue);
         }
     }
 
@@ -171,7 +177,7 @@ public:
 
     void pop_back(){
         if (size_ > 0){
-            ptr[--size_].~value_type();
+            allocator.destroy(ptr + --size_);
         } else {
             throw std::out_of_range("pop_back in empty vector");
         }
@@ -204,7 +210,7 @@ public:
         }
         T* temp = allocator.allocate(count);
         for (size_t i = 0; i < size_; ++i){
-            temp[i] = ptr[i];
+            allocator.construct(temp + i, ptr[i]);
         }
         allocator.deallocate(ptr, size_);
         capacity_ = count;
@@ -222,14 +228,14 @@ public:
     void resize(size_t newSize){
         if (size_ >= newSize){
             for (size_t i = newSize; i < size_; ++i){
-                ptr[i].~value_type();
+                allocator.destroy(ptr + i);
             }
         } else {
             if (capacity_ < newSize){
                 reserve(2 * newSize);
             } 
             for (size_t i = size_; i < newSize; ++i){
-                ptr[i] = value_type();
+                allocator.construct(ptr + i, value_type());
             }
         }
         size_ = newSize;
@@ -238,14 +244,14 @@ public:
     void resize(size_t newSize, const_reference defaultValue){
         if (size_ >= newSize){
             for (size_t i = newSize; i < size_; ++i){
-                ptr[i].~value_type();
+                allocator.destroy(ptr + i);
             }
         } else {
             if (capacity_ < newSize){
                 reserve(2 * newSize);
             } 
             for (size_t i = size_; i < newSize; ++i){
-                ptr[i] = defaultValue;
+                allocator.construct(ptr + i, defaultValue);
             }
         }
         size_ = newSize;
@@ -253,7 +259,7 @@ public:
 
     void clear() noexcept{
         for (size_t i = 0; i < size_; ++i){
-            ptr[i].~value_type();
+            allocator.destroy(ptr + i);
         }
         size_ = 0;
     }
