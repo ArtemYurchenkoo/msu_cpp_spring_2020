@@ -27,12 +27,9 @@ public:
         p->~value_type();
     }
 
-    void deallocate(pointer ptr, size_t count){
+    void deallocate(pointer ptr){
         if (ptr == nullptr){
             return;
-        }
-        for(size_t i = 0; i < count; ++i){
-            destroy(ptr + i);
         }
         ::operator delete[](ptr);
     }
@@ -146,7 +143,10 @@ public:
     }
 
     ~Vector(){
-        allocator.deallocate(ptr, size_);
+        for(size_t i = 0; i < size_; ++i){
+            allocator.destroy(ptr + i);
+        }
+        allocator.deallocate(ptr);
     }
 
     iterator begin() noexcept{
@@ -212,7 +212,10 @@ public:
         for (size_t i = 0; i < size_; ++i){
             allocator.construct(temp + i, ptr[i]);
         }
-        allocator.deallocate(ptr, size_);
+        for(size_t i = 0; i < size_; ++i){
+            allocator.destroy(ptr + i);
+        }
+        allocator.deallocate(ptr);
         capacity_ = count;
         ptr = temp;
     }   
