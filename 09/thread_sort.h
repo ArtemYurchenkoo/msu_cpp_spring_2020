@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 #include <vector>
 #include <string>
@@ -7,17 +8,22 @@
 #include <thread>
 #include <algorithm>
 #include <functional>
+#include "ThreadPool.h"
 
 constexpr size_t MAX_MEMORY_AVAILABLE = 8 * 1024 * 1024;
 constexpr size_t MAX_CHUNKS_MEMORY = 7 * 128 * 1024; // 7/8 of MAX_MEMORY_AVAILABLE, 1MB for all other stuff
 constexpr size_t MAX_ELEMS = size_t(float(MAX_CHUNKS_MEMORY) / sizeof(uint64_t));
 class ThreadSort{
+    uint64_t* buf;
+    std::ifstream input;
+    std::string out;
+    ThreadPool pool{2};
 private:
-    std::vector<std::string> split(std::ifstream &input, uint64_t* buf){
+    std::vector<std::string> split(){
         input.seekg(0, input.end);
         size_t len = input.tellg() / sizeof(uint64_t);
         input.seekg(0, input.beg);
-
+        std::cout << len << '\n';
         size_t n_chunks = 2 * std::ceil(float(len) / MAX_ELEMS);
         std::vector<std::string> names(n_chunks);
         for (size_t i = 0; i < n_chunks; ++i){
@@ -29,14 +35,14 @@ private:
             input.read(reinterpret_cast<char*>(buf), MAX_ELEMS * sizeof(uint64_t));
             size_t read_count = input.gcount() / sizeof(uint64_t);
 
-            std::thread t1([buf, read_count](){
+            auto t = pool.exec([this, read_count](){
                 std::sort(buf, buf + read_count / 2);
             });
-            std::thread t2([buf, read_count](){
+            t.get();
+            auto p = pool.exec([this, read_count](){
                 std::sort(buf + read_count / 2, buf + read_count);
             });
-            t1.join();
-            t2.join();
+            p.get();
 
             std::ofstream chunk1(names[chunk_id], std::ios::binary);
             std::ofstream chunk2(names[chunk_id + 1], std::ios::binary);
@@ -53,7 +59,7 @@ private:
         return names;
     } 
 
-    void merge(std::vector<std::string>& names, uint64_t* buf){
+    void merge(std::vector<std::string>& names){
         for (size_t i = 0; i < names.size() - 1; ++i){
             size_t pos = 0;
             uint64_t cur;
@@ -109,6 +115,24 @@ private:
     }
 
 public:
-    ThreadSort();
-    void sort(const std::string& input, const std::string& output);
+    ThreadSort(const std::string& inp, const std::string& output) : input(inp, std::ios::binary){
+        if (!input){
+            throw std::runtime_error("input file error");
+        }
+        buf = new uint64_t [MAX_CHUNKS_MEMORY];
+        out = output;
+    }
+
+    ~ThreadSort(){
+        delete [] buf;
+        input.close();
+    }
+
+    void sort(){
+        std::vector<std::string> names = split();
+        merge(names);
+        std::rename(names.back().c_str(), out.c_str());
+        names.pop_back();
+        clear(names);
+    }
 };

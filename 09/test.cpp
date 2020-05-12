@@ -16,7 +16,7 @@ void generate_file(const size_t count, const std::string& fn){
 int main(){
     size_t count = 1000 * 1000;
     generate_file(count, "test_input");
-    ThreadSort{}.sort("test_input", "test_output");
+    ThreadSort("test_input", "test_output").sort();
 
     uint64_t* buf = new uint64_t [count];
     std::ifstream f("test_output", std::ios::binary);
@@ -27,6 +27,6 @@ int main(){
         std::cout << "Not sorted" << std::endl;
     }
     delete [] buf;
-    f.close();
+    f.close(); 
     return 0;
 }
